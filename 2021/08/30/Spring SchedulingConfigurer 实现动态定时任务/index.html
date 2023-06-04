@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Spring SchedulingConfigurer 实现动态定时任务 | Antony</title>
+  <meta name="description" content="Spring SchedulingConfigurer 实现动态定时任务一、前言大家在日常工作中，一定使用过 Spring 的 @Scheduled 注解吧，通过该注解可以非常方便的帮助我们实现任务的定时执行。 但是该注解是不支持运行时动态修改执行间隔的，不知道你在业务中有没有这些需求和痛点：  在服务运行时能够动态修改定时任务的执行频率和执行开关，而无需重启服务和修改代码 能够基于配置，在不同环">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring SchedulingConfigurer 实现动态定时任务">
+<meta property="og:url" content="http://example.com/2021/08/30/Spring%20SchedulingConfigurer%20%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Spring SchedulingConfigurer 实现动态定时任务一、前言大家在日常工作中，一定使用过 Spring 的 @Scheduled 注解吧，通过该注解可以非常方便的帮助我们实现任务的定时执行。 但是该注解是不支持运行时动态修改执行间隔的，不知道你在业务中有没有这些需求和痛点：  在服务运行时能够动态修改定时任务的执行频率和执行开关，而无需重启服务和修改代码 能够基于配置，在不同环">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/jitwxs/cdn/blog/posts//202103/20210328003410.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/jitwxs/cdn/blog/posts//202103/20210327232032.png">
+<meta property="article:published_time" content="2021-08-30T02:30:20.000Z">
+<meta property="article:modified_time" content="2023-06-04T13:14:15.190Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="spring">
+<meta property="article:tag" content="schedule">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/jitwxs/cdn/blog/posts//202103/20210328003410.png">
+  <!-- Canonical links -->
+  <link rel="canonical" href="http://example.com/2021/08/30/Spring%20SchedulingConfigurer%20%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+    <link href="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.3.5/dist/jquery.fancybox.min.css" rel="stylesheet">
+  
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/immAntony" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Antony</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Just Do It.</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> SiChuan, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav menu-highlight">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>没关系，慢慢来。在那之前，想清楚</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Postgrep/" rel="tag">Postgrep</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gis/" rel="tag">gis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kubernets/" rel="tag">kubernets</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oracle/" rel="tag">oracle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgis/" rel="tag">postgis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/schedule/" rel="tag">schedule</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spatial/" rel="tag">spatial</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/" rel="tag">spring</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql/" rel="tag">sql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag">分布式</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/Java/" style="font-size: 14px;">Java</a> <a href="/tags/Postgrep/" style="font-size: 13px;">Postgrep</a> <a href="/tags/gis/" style="font-size: 13.5px;">gis</a> <a href="/tags/kubernets/" style="font-size: 13px;">kubernets</a> <a href="/tags/oracle/" style="font-size: 13px;">oracle</a> <a href="/tags/postgis/" style="font-size: 13px;">postgis</a> <a href="/tags/schedule/" style="font-size: 13px;">schedule</a> <a href="/tags/spatial/" style="font-size: 13px;">spatial</a> <a href="/tags/spring/" style="font-size: 13px;">spring</a> <a href="/tags/sql/" style="font-size: 13px;">sql</a> <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" style="font-size: 13.5px;">分布式</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">五月 2021</a><span class="archive-list-count">15</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/08/30/SQL%E5%B0%8F%E8%AE%B0(pg%20in%20%E5%AE%89%E5%9B%BE)/" class="title">记一下常用的pg sql</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-08-30T02:30:20.000Z" itemprop="datePublished">2021-08-30</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/08/30/Spring%20SchedulingConfigurer%20%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" class="title">Spring SchedulingConfigurer 实现动态定时任务</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-08-30T02:30:20.000Z" itemprop="datePublished">2021-08-30</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/05/27/K8s%201.17%20%E8%AF%81%E4%B9%A6%E6%9B%B4%E6%96%B0/" class="title">K8s 1.17 证书更新</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-05-27T13:12:30.000Z" itemprop="datePublished">2021-05-27</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/05/26/CopyOnWriteArrayList%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/" class="title">CopyOnWriteArrayList源码解析</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-05-26T13:12:30.000Z" itemprop="datePublished">2021-05-26</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/05/26/CopyOnWriteArraySet%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/" class="title">CopyOnWriteArraySet源码解析</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-05-26T13:12:30.000Z" itemprop="datePublished">2021-05-26</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Spring SchedulingConfigurer 实现动态定时任务" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Spring SchedulingConfigurer 实现动态定时任务
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2021/08/30/Spring%20SchedulingConfigurer%20%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" class="article-date">
+	  <time datetime="2021-08-30T02:30:20.000Z" itemprop="datePublished">2021-08-30</time>
+	</a>
+</span>
+        
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/schedule/" rel="tag">schedule</a>, <a class="article-tag-link-link" href="/tags/spring/" rel="tag">spring</a>
+  </span>
+
+
+        
+
+	<span class="article-read hidden-xs">
+    	<i class="icon icon-eye-fill" aria-hidden="true"></i>
+    	<span id="/2021/08/30/Spring%20SchedulingConfigurer%20%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" class="leancloud_visitors"  data-flag-title="Spring SchedulingConfigurer 实现动态定时任务">
+			<span class="leancloud-visitors-count">0</span>
+		</span>
+    </span>
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021/08/30/Spring%20SchedulingConfigurer%20%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 2.9k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 13(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h1 id="Spring-SchedulingConfigurer-实现动态定时任务"><a href="#Spring-SchedulingConfigurer-实现动态定时任务" class="headerlink" title="Spring SchedulingConfigurer 实现动态定时任务"></a>Spring SchedulingConfigurer 实现动态定时任务</h1><h2 id="一、前言"><a href="#一、前言" class="headerlink" title="一、前言"></a>一、前言</h2><p>大家在日常工作中，一定使用过 Spring 的 <code>@Scheduled</code> 注解吧，通过该注解可以非常方便的帮助我们实现任务的定时执行。</p>
+<p>但是该注解是不支持运行时动态修改执行间隔的，不知道你在业务中有没有这些需求和痛点：</p>
+<ul>
+<li>在服务运行时能够动态修改定时任务的执行频率和执行开关，而无需重启服务和修改代码</li>
+<li>能够基于配置，在不同环境/机器上，实现定时任务执行频率的差异化</li>
+</ul>
+<p>这些都可以通过 Spring 的 <code>SchedulingConfigurer</code> 注解来实现。</p>
+<p>这个注解其实大家并不陌生，如果有使用过 <code>@Scheduled</code> 的话，因为 <code>@Scheduled</code> 默认是单线程执行的，因此如果存在多个任务同时触发，可能触发阻塞。使用 <code>SchedulingConfigurer</code> 可以配置用于执行 <code>@Scheduled</code> 的线程池，来避免这个问题。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ScheduleConfig</span> <span class="keyword">implements</span> <span class="title">SchedulingConfigurer</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">configureTasks</span><span class="params">(ScheduledTaskRegistrar taskRegistrar)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//设定一个长度10的定时任务线程池</span></span><br><span class="line">        taskRegistrar.setScheduler(Executors.newScheduledThreadPool(<span class="number">10</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但其实这个接口，还可以实现动态定时任务的功能，下面来演示如何实现。</p>
+<h2 id="二、功能实现"><a href="#二、功能实现" class="headerlink" title="二、功能实现"></a>二、功能实现</h2><blockquote>
+<p>后续定义的类开头的 <code>DS</code> 是 <code>Dynamic Schedule</code> 的缩写。</p>
+</blockquote>
+<p>使用到的依赖，除了 Spring 外，还包括：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.commons<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>commons-lang3<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.commons<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>commons-collections4<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>4.4<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.projectlombok<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>lombok<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>provided<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.18.18<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-1-EnableScheduling"><a href="#2-1-EnableScheduling" class="headerlink" title="2.1 @EnableScheduling"></a>2.1 <strong>@EnableScheduling</strong></h3><p>首先需要开启 <code>@EnableScheduling</code> 注解，直接在启动类添加即可：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableScheduling</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DSApplication</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(DSApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-IDSTaskInfo"><a href="#2-2-IDSTaskInfo" class="headerlink" title="2.2 IDSTaskInfo"></a>2.2 IDSTaskInfo</h3><p>定义一个任务信息的接口，后续所有用于动态调整的任务信息对象，都需要实现该接口。</p>
+<ul>
+<li><code>id</code>：该任务信息的唯一 ID，用于唯一标识一个任务</li>
+<li><code>cron</code>：该任务执行的 cron 表达式。</li>
+<li><code>isValid</code>：任务开关</li>
+<li><code>isChange</code>：用于标识任务参数是否发生了改变</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IDSTaskInfo</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 任务 ID</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">long</span> <span class="title">getId</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 任务执行 cron 表达式</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function">String <span class="title">getCron</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 任务是否有效</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isValid</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 判断任务是否发生变化</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isChange</span><span class="params">(IDSTaskInfo oldTaskInfo)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-DSContainer"><a href="#2-3-DSContainer" class="headerlink" title="2.3 DSContainer"></a>2.3 DSContainer</h3><p>顾名思义，是存放 IDSTaskInfo 的容器。</p>
+<p>具有以下成员变量：</p>
+<ul>
+<li><p>```<br>scheduleMap</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">  ：用于暂存 IDSTaskInfo 和实际任务 ScheduledTask 的映射关系。其中：</span><br><span class="line"></span><br><span class="line">  - &#96;task_id&#96;：作为主键，确保一个 IDSTaskInfo 只会被注册进一次</span><br><span class="line">  - &#96;T&#96;：暂存当初注册时的 IDSTaskInfo，用于跟最新的 IDSTaskInfo 比较参数是否发生变化</span><br><span class="line">  - &#96;ScheduledTask&#96;：暂存当初注册时生成的任务，如果需要取消任务的话，需要拿到该对象</span><br><span class="line">  - &#96;Semaphore&#96;：确保每个任务实际执行时只有一个线程执行，不会产生并发问题</span><br><span class="line">    -&#96;taskRegistrar&#96;：Spring 的任务注册管理器，用于注册任务到 Spring 容器中</span><br><span class="line"></span><br><span class="line">- &#96;name&#96;：调用方提供的类名</span><br><span class="line"></span><br><span class="line">具有以下成员方法：</span><br><span class="line"></span><br><span class="line">- &#96;&#96;&#96;java</span><br><span class="line">  void checkTask(final T taskInfo, final TriggerTask triggerTask)</span><br></pre></td></tr></table></figure>
+
+<p>：检查 IDSTaskInfo，判断是否需要注册/取消任务。具体的逻辑包括：</p>
+<ul>
+<li>如果任务已经注册：<ul>
+<li>如果任务无效：则取消任务</li>
+<li>如果任务有效：<ul>
+<li>如果任务配置发生了变化：则取消任务并重新注册任务</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>如果任务没有注册：<ul>
+<li>如果任务有效：则注册任务</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><code>Semaphore getSemaphore()</code>：获取信号量属性。</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> lombok.extern.slf4j.Slf4j;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.lang3.tuple.Pair;</span><br><span class="line"><span class="keyword">import</span> org.springframework.scheduling.config.ScheduledTask;</span><br><span class="line"><span class="keyword">import</span> org.springframework.scheduling.config.ScheduledTaskRegistrar;</span><br><span class="line"><span class="keyword">import</span> org.springframework.scheduling.config.TriggerTask;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.ConcurrentHashMap;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.Semaphore;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 存放 IDSTaskInfo 容器</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> jitwxs</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2021年03月27日 16:29</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DSContainer</span>&lt;<span class="title">T</span> <span class="keyword">extends</span> <span class="title">IDSTaskInfo</span>&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * IDSTaskInfo和真实任务的关联关系</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * &lt;task_id, &lt;Task, &lt;Scheduled, Semaphore&gt;&gt;&gt;</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;Long, Pair&lt;T, Pair&lt;ScheduledTask, Semaphore&gt;&gt;&gt; scheduleMap = <span class="keyword">new</span> ConcurrentHashMap&lt;&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ScheduledTaskRegistrar taskRegistrar;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">DSContainer</span><span class="params">(ScheduledTaskRegistrar scheduledTaskRegistrar, <span class="keyword">final</span> String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.taskRegistrar = scheduledTaskRegistrar;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 注册任务</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> taskInfo 任务信息</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> triggerTask 任务的触发规则</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">checkTask</span><span class="params">(<span class="keyword">final</span> T taskInfo, <span class="keyword">final</span> TriggerTask triggerTask)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">long</span> taskId = taskInfo.getId();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (scheduleMap.containsKey(taskId)) &#123;</span><br><span class="line">            <span class="keyword">if</span> (taskInfo.isValid()) &#123;</span><br><span class="line">                <span class="keyword">final</span> T oldTaskInfo = scheduleMap.get(taskId).getLeft();</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span>(oldTaskInfo.isChange(taskInfo)) &#123;</span><br><span class="line">                    log.info(<span class="string">&quot;DSContainer will register &#123;&#125; again because task config change, taskId: &#123;&#125;&quot;</span>, name, taskId);</span><br><span class="line">                    cancelTask(taskId);</span><br><span class="line">                    registerTask(taskInfo, triggerTask);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                log.info(<span class="string">&quot;DSContainer will cancelTask &#123;&#125; because task not valid, taskId: &#123;&#125;&quot;</span>, name, taskId);</span><br><span class="line">                cancelTask(taskId);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (taskInfo.isValid()) &#123;</span><br><span class="line">                log.info(<span class="string">&quot;DSContainer will register &#123;&#125; task, taskId: &#123;&#125;&quot;</span>, name, taskId);</span><br><span class="line">                registerTask(taskInfo, triggerTask);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取 Semaphore，确保任务不会被多个线程同时执行</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Semaphore <span class="title">getSemaphore</span><span class="params">(<span class="keyword">final</span> <span class="keyword">long</span> taskId)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.scheduleMap.get(taskId).getRight().getRight();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">registerTask</span><span class="params">(<span class="keyword">final</span> T taskInfo, <span class="keyword">final</span> TriggerTask triggerTask)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> ScheduledTask latestTask = taskRegistrar.scheduleTriggerTask(triggerTask);</span><br><span class="line">        <span class="keyword">this</span>.scheduleMap.put(taskInfo.getId(), Pair.of(taskInfo, Pair.of(latestTask, <span class="keyword">new</span> Semaphore(<span class="number">1</span>))));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">cancelTask</span><span class="params">(<span class="keyword">final</span> <span class="keyword">long</span> taskId)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> Pair&lt;T, Pair&lt;ScheduledTask, Semaphore&gt;&gt; pair = <span class="keyword">this</span>.scheduleMap.remove(taskId);</span><br><span class="line">        <span class="keyword">if</span> (pair != <span class="keyword">null</span>) &#123;</span><br><span class="line">            pair.getRight().getLeft().cancel();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-AbstractDSHandler"><a href="#2-4-AbstractDSHandler" class="headerlink" title="2.4 AbstractDSHandler"></a>2.4 AbstractDSHandler</h3><p>下面定义实际的动态线程池处理方法，这里采用抽象类实现，将共用逻辑封装起来，方便扩展。</p>
+<p>具有以下抽象方法：</p>
+<ul>
+<li><code>List&lt;T&gt; listTaskInfo()</code>：获取所有的任务信息。</li>
+<li><code>void doProcess(T taskInfo)</code>：实现实际执行任务的业务逻辑。</li>
+</ul>
+<p>具有以下公共方法：</p>
+<ul>
+<li><code>void configureTasks(ScheduledTaskRegistrar taskRegistrar)</code>：创建 DSContainer 对象，并创建一个单线程的任务定时执行，调用 scheduleTask() 方法处理实际逻辑。</li>
+<li><code>void scheduleTask()</code>：首先加载所有任务信息，然后基于 cron 表达式生成 TriggerTask 对象，调用 checkTask() 方法确认是否需要注册/取消任务。当达到执行时间时，调用 execute() 方法，执行任务逻辑。</li>
+<li><code>void execute(final T taskInfo)</code>：获取信号量，成功后执行任务逻辑。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> lombok.extern.slf4j.Slf4j;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.CollectionUtils;</span><br><span class="line"><span class="keyword">import</span> org.springframework.scheduling.annotation.SchedulingConfigurer;</span><br><span class="line"><span class="keyword">import</span> org.springframework.scheduling.config.ScheduledTaskRegistrar;</span><br><span class="line"><span class="keyword">import</span> org.springframework.scheduling.config.TriggerTask;</span><br><span class="line"><span class="keyword">import</span> org.springframework.scheduling.support.CronTrigger;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.Objects;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.Semaphore;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 抽象 Dynamic Schedule 实现，基于 SchedulingConfigurer 实现</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> jitwxs</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2021年03月27日 16:41</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">AbstractDSHandler</span>&lt;<span class="title">T</span> <span class="keyword">extends</span> <span class="title">IDSTaskInfo</span>&gt; <span class="keyword">implements</span> <span class="title">SchedulingConfigurer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> DSContainer&lt;T&gt; dsContainer;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> String CLASS_NAME = getClass().getSimpleName();</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 获取所有的任务信息</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> List&lt;T&gt; <span class="title">listTaskInfo</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 做具体的任务逻辑</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * &lt;p/&gt; 该方法执行时位于跟 SpringBoot <span class="doctag">@Scheduled</span> 注解相同的线程池内。如果内部仍需要开子线程池执行，请务必同步等待子线程池执行完毕，否则可能会影响预期效果。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">doProcess</span><span class="params">(T taskInfo)</span> <span class="keyword">throws</span> Throwable</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">configureTasks</span><span class="params">(ScheduledTaskRegistrar taskRegistrar)</span> </span>&#123;</span><br><span class="line">        dsContainer = <span class="keyword">new</span> DSContainer&lt;&gt;(taskRegistrar, CLASS_NAME);</span><br><span class="line">        <span class="comment">// 每隔 100ms 调度一次，用于读取所有任务</span></span><br><span class="line">        taskRegistrar.addFixedDelayTask(<span class="keyword">this</span>::scheduleTask, <span class="number">1000</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 调度任务，加载所有任务并注册</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">scheduleTask</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        CollectionUtils.emptyIfNull(listTaskInfo()).forEach(taskInfo -&gt;</span><br><span class="line">                dsContainer.checkTask(taskInfo, <span class="keyword">new</span> TriggerTask(() -&gt;</span><br><span class="line">                        <span class="keyword">this</span>.execute(taskInfo), triggerContext -&gt; <span class="keyword">new</span> CronTrigger(taskInfo.getCron()).nextExecutionTime(triggerContext)</span><br><span class="line">                ))</span><br><span class="line">        );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">execute</span><span class="params">(<span class="keyword">final</span> T taskInfo)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> <span class="keyword">long</span> taskId = taskInfo.getId();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Semaphore semaphore = dsContainer.getSemaphore(taskId);</span><br><span class="line">            <span class="keyword">if</span> (Objects.isNull(semaphore)) &#123;</span><br><span class="line">                log.error(<span class="string">&quot;&#123;&#125; semaphore is null, taskId: &#123;&#125;&quot;</span>, CLASS_NAME, taskId);</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (semaphore.tryAcquire(<span class="number">3</span>, TimeUnit.SECONDS)) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    doProcess(taskInfo);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Throwable throwable) &#123;</span><br><span class="line">                    log.error(<span class="string">&quot;&#123;&#125; doProcess error, taskId: &#123;&#125;&quot;</span>, CLASS_NAME, taskId, throwable);</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    semaphore.release();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                log.warn(<span class="string">&quot;&#123;&#125; too many executor, taskId: &#123;&#125;&quot;</span>, CLASS_NAME, taskId);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            log.warn(<span class="string">&quot;&#123;&#125; interruptedException error, taskId: &#123;&#125;&quot;</span>, CLASS_NAME, taskId);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;&#123;&#125; execute error, taskId: &#123;&#125;&quot;</span>, CLASS_NAME, taskId, e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="三、快速测试"><a href="#三、快速测试" class="headerlink" title="三、快速测试"></a>三、快速测试</h2><p>至此就完成了动态任务的框架搭建，下面让我们来快速测试下。为了尽量减少其他技术带来的复杂度，本次测试不涉及数据库和真实的定时任务，完全采用模拟实现。</p>
+<h3 id="3-1-模拟定时任务"><a href="#3-1-模拟定时任务" class="headerlink" title="3.1 模拟定时任务"></a>3.1 模拟定时任务</h3><p>为了模拟一个定时任务，我定义了一个 <code>foo()</code> 方法，其中只输出一句话。后续我将通过定时调用该方法，来模拟定时任务。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> lombok.extern.slf4j.Slf4j;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.time.LocalTime;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SchedulerTest</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        log.info(<span class="string">&quot;&#123;&#125; Execute com.github.jitwxs.sample.ds.test.SchedulerTest#foo&quot;</span>, LocalTime.now());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-实现-IDSTaskInfo"><a href="#3-2-实现-IDSTaskInfo" class="headerlink" title="3.2 实现 IDSTaskInfo"></a>3.2 实现 IDSTaskInfo</h3><p>首先定义 <code>IDSTaskInfo</code>，我这里想通过反射来实现调用 <code>foo()</code> 方法，因此 reference 表示的是要调用方法的全路径。另外我实现了 <code>isChange()</code> 方法，只要 <code>cron</code>、<code>isValid</code>、<code>reference</code> 发生了变动，就认为该任务的配置发生了改变。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.github.jitwxs.sample.ds.config.IDSTaskInfo;</span><br><span class="line"><span class="keyword">import</span> lombok.Builder;</span><br><span class="line"><span class="keyword">import</span> lombok.Data;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Data</span></span><br><span class="line"><span class="meta">@Builder</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SchedulerTestTaskInfo</span> <span class="keyword">implements</span> <span class="title">IDSTaskInfo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> id;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String cron;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">boolean</span> isValid;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> String reference;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isChange</span><span class="params">(IDSTaskInfo oldTaskInfo)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(oldTaskInfo <span class="keyword">instanceof</span> SchedulerTestTaskInfo) &#123;</span><br><span class="line">            <span class="keyword">final</span> SchedulerTestTaskInfo obj = (SchedulerTestTaskInfo) oldTaskInfo;</span><br><span class="line">            <span class="keyword">return</span> !<span class="keyword">this</span>.cron.equals(obj.cron) || <span class="keyword">this</span>.isValid != obj.isValid || !<span class="keyword">this</span>.reference.equals(obj.getReference());</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">&quot;Not Support SchedulerTestTaskInfo type&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-实现-AbstractDSHandler"><a href="#3-3-实现-AbstractDSHandler" class="headerlink" title="3.3 实现 AbstractDSHandler"></a>3.3 实现 AbstractDSHandler</h3><p>有几个需要关注的：</p>
+<ol>
+<li><p><code>listTaskInfo()</code> 返回值我使用了 volatile 变量，便于我修改它，模拟任务信息数据的改变。</p>
+</li>
+<li><p><code>doProcess()</code> 方法中，读取到 reference 后，使用反射进行调用，模拟定时任务的执行。</p>
+</li>
+<li><p>额外实现了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ApplicationListener</span><br></pre></td></tr></table></figure>
+
+<p>接口，当服务启动后，每隔一段时间修改下任务信息，模拟业务中调整配置。</p>
+<ul>
+<li>服务启动后，foo() 定时任务将每 10s 执行一次。</li>
+<li>10s 后，将 foo() 定时任务执行周期从每 10s 执行调整为 1s 执行。</li>
+<li>10s 后，关闭 foo() 定时任务执行。</li>
+<li>10s 后，开启 foo() 定时任务执行。</li>
+</ul>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.github.jitwxs.sample.ds.config.AbstractDSHandler;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.ApplicationEvent;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.ApplicationListener;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Component;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"><span class="keyword">import</span> java.util.Collections;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.Executors;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.locks.LockSupport;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> jitwxs</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@date</span> 2021年03月27日 21:54</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SchedulerTestDSHandler</span> <span class="keyword">extends</span> <span class="title">AbstractDSHandler</span>&lt;<span class="title">SchedulerTestTaskInfo</span>&gt; <span class="keyword">implements</span> <span class="title">ApplicationListener</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">volatile</span> List&lt;SchedulerTestTaskInfo&gt; taskInfoList = Collections.singletonList(</span><br><span class="line">            SchedulerTestTaskInfo.builder()</span><br><span class="line">                    .id(<span class="number">1</span>)</span><br><span class="line">                    .cron(<span class="string">&quot;0/10 * * * * ? &quot;</span>)</span><br><span class="line">                    .isValid(<span class="keyword">true</span>)</span><br><span class="line">                    .reference(<span class="string">&quot;com.github.jitwxs.sample.ds.test.SchedulerTest#foo&quot;</span>)</span><br><span class="line">                    .build()</span><br><span class="line">    );</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> List&lt;SchedulerTestTaskInfo&gt; <span class="title">listTaskInfo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> taskInfoList;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doProcess</span><span class="params">(SchedulerTestTaskInfo taskInfo)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> String reference = taskInfo.getReference();</span><br><span class="line">        <span class="keyword">final</span> String[] split = reference.split(<span class="string">&quot;#&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span>(split.length != <span class="number">2</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">try</span> &#123;</span><br><span class="line">           <span class="keyword">final</span> Class&lt;?&gt; clazz = Class.forName(split[<span class="number">0</span>]);</span><br><span class="line">           <span class="keyword">final</span> Method method = clazz.getMethod(split[<span class="number">1</span>]);</span><br><span class="line">           method.invoke(clazz.newInstance());</span><br><span class="line">       &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">           e.printStackTrace();</span><br><span class="line">       &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onApplicationEvent</span><span class="params">(ApplicationEvent applicationEvent)</span> </span>&#123;</span><br><span class="line">        Executors.newScheduledThreadPool(<span class="number">1</span>).scheduleAtFixedRate(() -&gt; &#123;</span><br><span class="line">            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(<span class="number">10</span>));</span><br><span class="line"></span><br><span class="line">            <span class="comment">// setting 1 seconds execute</span></span><br><span class="line">            taskInfoList = Collections.singletonList(</span><br><span class="line">                    SchedulerTestTaskInfo.builder()</span><br><span class="line">                            .id(<span class="number">1</span>)</span><br><span class="line">                            .cron(<span class="string">&quot;0/1 * * * * ? &quot;</span>)</span><br><span class="line">                            .isValid(<span class="keyword">true</span>)</span><br><span class="line">                            .reference(<span class="string">&quot;com.github.jitwxs.sample.ds.test.SchedulerTest#foo&quot;</span>)</span><br><span class="line">                            .build()</span><br><span class="line">            );</span><br><span class="line"></span><br><span class="line">            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(<span class="number">10</span>));</span><br><span class="line"></span><br><span class="line">            <span class="comment">// setting not valid</span></span><br><span class="line">            taskInfoList = Collections.singletonList(</span><br><span class="line">                    SchedulerTestTaskInfo.builder()</span><br><span class="line">                            .id(<span class="number">1</span>)</span><br><span class="line">                            .cron(<span class="string">&quot;0/1 * * * * ? &quot;</span>)</span><br><span class="line">                            .isValid(<span class="keyword">false</span>)</span><br><span class="line">                            .reference(<span class="string">&quot;com.github.jitwxs.sample.ds.test.SchedulerTest#foo&quot;</span>)</span><br><span class="line">                            .build()</span><br><span class="line">            );</span><br><span class="line"></span><br><span class="line">            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(<span class="number">10</span>));</span><br><span class="line"></span><br><span class="line">            <span class="comment">// setting valid</span></span><br><span class="line">            taskInfoList = Collections.singletonList(</span><br><span class="line">                    SchedulerTestTaskInfo.builder()</span><br><span class="line">                            .id(<span class="number">1</span>)</span><br><span class="line">                            .cron(<span class="string">&quot;0/1 * * * * ? &quot;</span>)</span><br><span class="line">                            .isValid(<span class="keyword">true</span>)</span><br><span class="line">                            .reference(<span class="string">&quot;com.github.jitwxs.sample.ds.test.SchedulerTest#foo&quot;</span>)</span><br><span class="line">                            .build()</span><br><span class="line">            );</span><br><span class="line">        &#125;, <span class="number">12</span>, <span class="number">86400</span>, TimeUnit.SECONDS);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-4-运行程序"><a href="#3-4-运行程序" class="headerlink" title="3.4 运行程序"></a>3.4 运行程序</h3><p>整个应用包结构如下：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/jitwxs/cdn/blog/posts//202103/20210328003410.png" alt="img"></p>
+<p>运行程序后，在控制台可以观测到如下输出：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/jitwxs/cdn/blog/posts//202103/20210327232032.png" alt="img"></p>
+<p>四、后记</p>
+<p>以上完成了动态定时任务的介绍，你能够根据本篇文章，实现以下需求吗：</p>
+<ul>
+<li>本文基于 cron 表达式实现了频率控制，你能改用 fixedDelay 或 fixedRate 实现吗？</li>
+<li>基于数据库/配置文件/配置中心，实现对服务中定时任务的动态频率调整和任务的启停。</li>
+<li>开发一个数据表历史数据清理功能，能够动态配置要清理的表、清理的规则、清理的周期。</li>
+<li>开发一个数据表异常数据告警功能，能够动态配置要扫描的表、告警的规则、扫描的周期。</li>
+</ul>
+
+      
+    </div>
+    <div class="article-footer">
+      <!-- <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/2021/08/30/Spring%20SchedulingConfigurer%20%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" title="Spring SchedulingConfigurer 实现动态定时任务" target="_blank" rel="external">http://example.com/2021/08/30/Spring%20SchedulingConfigurer%20%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/immAntony" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/immAntony" target="_blank"><span class="text-dark">Antony</span><small class="ml-1x">Just Do It.</small></a></h3>
+        <div>拼搏中的少年</div>
+      </div>
+    </figure>
+  </div>
+</div>
+ -->
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2021/08/30/SQL%E5%B0%8F%E8%AE%B0(pg%20in%20%E5%AE%89%E5%9B%BE)/" title="记一下常用的pg sql"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2021/05/27/K8s%201.17%20%E8%AF%81%E4%B9%A6%E6%9B%B4%E6%96%B0/" title="K8s 1.17 证书更新"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <!-- <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer> -->
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: true,
+    notify: true,
+    appId: 'rhwhhT5v4UbIhkGEt6W6KreT-gzGzoHsz',
+    appKey: 'FRJK4DzD1YiKoOkpHKMfRgUC',
+    placeholder: '说点什么...',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: true
+  });
+  </script>
+
+     
+
+
+
+  <script src="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.3.5/dist/jquery.fancybox.min.js"></script>
+  <script>
+  //利用 FancyBox 实现点击图片放大
+  $(document).ready(function() {
+    $('article img').not('[hidden]').not('.panel-body img').each(function() {
+      var $image = $(this);
+      var imageCaption = $image.attr('alt');
+      var $imageWrapLink = $image.parent('a');
+      if ($imageWrapLink.length < 1) {
+        var src = this.getAttribute('src');
+        var idx = src.lastIndexOf('?');
+        if (idx != -1) {
+          src = src.substring(0, idx);
+        }
+        $imageWrapLink = $image.wrap('<a href="' + src + '"></a>').parent('a');
+      }
+      $imageWrapLink.attr('data-fancybox', 'images');
+      if (imageCaption) {
+        $imageWrapLink.attr('data-caption', imageCaption);
+      }
+    });
+    $().fancybox({
+      selector: '[data-fancybox="images"]',
+      hash: false,
+      loop: false,
+    });
+  });
+  </script>
+
+
+
+
+
+</body>
+</html>

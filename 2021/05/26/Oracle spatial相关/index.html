@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>Oracle spatial相关 | Antony</title>
+  <meta name="description" content="Oracle Spatial中SDO_GEOMETRY类型：  1234567CREATE  TYPE SDO_GEOMETRY AS OBJECT( SDO_GTYPE NUMBER,--几何类型，如点线面SDO_SRID NUMBER,--几何的空间参考坐标系SDO_POINT SDO_POINT_TYPE,--如果几何为点类型，则存储点坐标，否则为空SDO_ELEM_INFO SDO_EL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Oracle spatial相关">
+<meta property="og:url" content="http://example.com/2021/05/26/Oracle%20spatial%E7%9B%B8%E5%85%B3/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Oracle Spatial中SDO_GEOMETRY类型：  1234567CREATE  TYPE SDO_GEOMETRY AS OBJECT( SDO_GTYPE NUMBER,--几何类型，如点线面SDO_SRID NUMBER,--几何的空间参考坐标系SDO_POINT SDO_POINT_TYPE,--如果几何为点类型，则存储点坐标，否则为空SDO_ELEM_INFO SDO_EL">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-05-26T08:59:03.000Z">
+<meta property="article:modified_time" content="2023-06-04T13:14:15.190Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="oracle">
+<meta property="article:tag" content="gis">
+<meta property="article:tag" content="spatial">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="http://example.com/2021/05/26/Oracle%20spatial%E7%9B%B8%E5%85%B3/index.html">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+    <link href="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.3.5/dist/jquery.fancybox.min.css" rel="stylesheet">
+  
+  
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<body class="main-center" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/immAntony" target="_blank">
+          <img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">Antony</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Just Do It.</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> SiChuan, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form">
+        <div class="input-group">
+            <input type="text" class="search-form-input form-control" placeholder="搜索" />
+            <span class="input-group-btn">
+                <button type="submit" class="search-form-submit btn btn-flat" onclick="return false;"><i class="icon icon-search"></i></button>
+            </span>
+        </div>
+    </form>
+    <div class="ins-search">
+  <div class="ins-search-mask"></div>
+  <div class="ins-search-container">
+    <div class="ins-input-wrapper">
+      <input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech />
+      <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="ins-section-wrapper">
+      <div class="ins-section-container"></div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav menu-highlight">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>没关系，慢慢来。在那之前，想清楚</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/" rel="tag">Java</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Postgrep/" rel="tag">Postgrep</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gis/" rel="tag">gis</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kubernets/" rel="tag">kubernets</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oracle/" rel="tag">oracle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgis/" rel="tag">postgis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/schedule/" rel="tag">schedule</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spatial/" rel="tag">spatial</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/spring/" rel="tag">spring</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sql/" rel="tag">sql</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag">分布式</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/Java/" style="font-size: 14px;">Java</a> <a href="/tags/Postgrep/" style="font-size: 13px;">Postgrep</a> <a href="/tags/gis/" style="font-size: 13.5px;">gis</a> <a href="/tags/kubernets/" style="font-size: 13px;">kubernets</a> <a href="/tags/oracle/" style="font-size: 13px;">oracle</a> <a href="/tags/postgis/" style="font-size: 13px;">postgis</a> <a href="/tags/schedule/" style="font-size: 13px;">schedule</a> <a href="/tags/spatial/" style="font-size: 13px;">spatial</a> <a href="/tags/spring/" style="font-size: 13px;">spring</a> <a href="/tags/sql/" style="font-size: 13px;">sql</a> <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" style="font-size: 13.5px;">分布式</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/05/">五月 2021</a><span class="archive-list-count">15</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/08/30/SQL%E5%B0%8F%E8%AE%B0(pg%20in%20%E5%AE%89%E5%9B%BE)/" class="title">记一下常用的pg sql</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-08-30T02:30:20.000Z" itemprop="datePublished">2021-08-30</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/08/30/Spring%20SchedulingConfigurer%20%E5%AE%9E%E7%8E%B0%E5%8A%A8%E6%80%81%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1/" class="title">Spring SchedulingConfigurer 实现动态定时任务</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-08-30T02:30:20.000Z" itemprop="datePublished">2021-08-30</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/05/27/K8s%201.17%20%E8%AF%81%E4%B9%A6%E6%9B%B4%E6%96%B0/" class="title">K8s 1.17 证书更新</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-05-27T13:12:30.000Z" itemprop="datePublished">2021-05-27</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/05/26/CopyOnWriteArrayList%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/" class="title">CopyOnWriteArrayList源码解析</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-05-26T13:12:30.000Z" itemprop="datePublished">2021-05-26</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2021/05/26/CopyOnWriteArraySet%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/" class="title">CopyOnWriteArraySet源码解析</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2021-05-26T13:12:30.000Z" itemprop="datePublished">2021-05-26</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-Oracle spatial相关" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Oracle spatial相关
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2021/05/26/Oracle%20spatial%E7%9B%B8%E5%85%B3/" class="article-date">
+	  <time datetime="2021-05-26T08:59:03.000Z" itemprop="datePublished">2021-05-26</time>
+	</a>
+</span>
+        
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/gis/" rel="tag">gis</a>, <a class="article-tag-link-link" href="/tags/oracle/" rel="tag">oracle</a>, <a class="article-tag-link-link" href="/tags/spatial/" rel="tag">spatial</a>
+  </span>
+
+
+        
+
+	<span class="article-read hidden-xs">
+    	<i class="icon icon-eye-fill" aria-hidden="true"></i>
+    	<span id="/2021/05/26/Oracle%20spatial%E7%9B%B8%E5%85%B3/" class="leancloud_visitors"  data-flag-title="Oracle spatial相关">
+			<span class="leancloud-visitors-count">0</span>
+		</span>
+    </span>
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2021/05/26/Oracle%20spatial%E7%9B%B8%E5%85%B3/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.7k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 8(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <blockquote>
+<p>Oracle Spatial中SDO_GEOMETRY类型：</p>
+</blockquote>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span>  TYPE SDO_GEOMETRY <span class="keyword">AS</span> OBJECT( </span><br><span class="line">SDO_GTYPE NUMBER,<span class="comment">--几何类型，如点线面</span></span><br><span class="line">SDO_SRID NUMBER,<span class="comment">--几何的空间参考坐标系</span></span><br><span class="line">SDO_POINT SDO_POINT_TYPE,<span class="comment">--如果几何为点类型，则存储点坐标，否则为空</span></span><br><span class="line">SDO_ELEM_INFO SDO_ELEM_INFO_ARRAY,<span class="comment">--定义如何理解SDO_ORDINATES中的坐标序列</span></span><br><span class="line">SDO_ORDINATES SDO_ORDINATE_ARRAY<span class="comment">--存储实际坐标，以X,Y以及不同点之间以逗号隔开</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h2 id="两个对象之间关系"><a href="#两个对象之间关系" class="headerlink" title="两个对象之间关系"></a>两个对象之间关系</h2><h3 id="RELATE"><a href="#RELATE" class="headerlink" title="RELATE"></a><strong>RELATE</strong></h3><p>SDO_GEOM.RELATE –确定两个对象的交互方式</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.RELATE(geom1 <span class="keyword">IN</span> SDO_GEOMETRY,dim1 <span class="keyword">IN</span> SDO_DIM_ARRAY,mask <span class="keyword">IN</span> VARCHAR2, geom2 <span class="keyword">IN</span> SDO_GEOMETRY,dim2 <span class="keyword">IN</span> SDO_DIM_ARRAY) <span class="keyword">RETURN</span> VARCHAR2;</span><br><span class="line">SDO_GEOM.RELATE(geom1 <span class="keyword">IN</span> SDO_GEOMETRY,mask <span class="keyword">IN</span> VARCHAR2,geom2 <span class="keyword">IN</span> SDO_GEOMETRY, tol <span class="keyword">IN</span> NUMBER)<span class="keyword">RETURN</span> VARCHAR2;<span class="comment">--tol容许的精度范围</span></span><br></pre></td></tr></table></figure>
+
+<p>mask:</p>
+<p>ANYINTERACT:geom2落在geom1面上，包括边上</p>
+<p>CONTAINS:geom2完全包含在geom1几何对象中，并且两个几何对象的边没有交叉</p>
+<p>COVEREDBY:geom1完全包含在geom2中，并且两个几何对象的边有一个或多个点相互重叠</p>
+<p>COVERS:geom2完全包含在geom1中，并且两个几何对象的边有一个或多个点相互重叠</p>
+<p>DISJOINT:两个几何没有重叠交叉点，也没有共同的边</p>
+<p>EQUAL:两个几何相等</p>
+<p>INSIDE:geom1完全包含在geom2几何对象中，并且两个几何对象的边没有交叉</p>
+<p>ON:geom1的边和内部的线完全在geom2上</p>
+<p>OVERLAPBDYDISJOINT:两个几何对象交迭，但是边没有交叉</p>
+<p>OVERLAPBDYINTERSECT:两个几何对象叫迭，并且边有部分交叉</p>
+<p>TOUCH:两个结合对象有共同的边，但没有交叉</p>
+<h3 id="WITHIN-DISTANCE"><a href="#WITHIN-DISTANCE" class="headerlink" title="WITHIN_DISTANCE"></a><strong>WITHIN_DISTANCE</strong></h3><p>SDO_GEOM.WITHIN_DISTANCE –确定两个几何是否在彼此指定的距离之内</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.WITHIN_DISTANCE(geom1 <span class="keyword">IN</span> SDO_GEOMETRY,dim1 <span class="keyword">IN</span> SDO_DIM_ARRAY,dist <span class="keyword">IN</span> NUMBER, geom2 <span class="keyword">IN</span> SDO_GEOMETRY,dim2 <span class="keyword">IN</span> SDO_DIM_ARRAY[, units <span class="keyword">IN</span> VARCHAR2]) <span class="keyword">RETURN</span> VARCHAR2;</span><br><span class="line">SDO_GEOM.WITHIN_DISTANCE(geom1 <span class="keyword">IN</span> SDO_GEOMETRY,dist <span class="keyword">IN</span> NUMBER,geom2 <span class="keyword">IN</span> SDO_GEOMETRY,tol <span class="keyword">IN</span> NUMBER[, units <span class="keyword">IN</span> VARCHAR2]) <span class="keyword">RETURN</span> VARCHAR2;</span><br></pre></td></tr></table></figure>
+
+<h2 id="验证："><a href="#验证：" class="headerlink" title="验证："></a><strong>验证：</strong></h2><h3 id="VALIDATE-GEOMETRY-WITH-CONTEXT"><a href="#VALIDATE-GEOMETRY-WITH-CONTEXT" class="headerlink" title="VALIDATE_GEOMETRY_WITH_CONTEXT"></a><strong>VALIDATE_GEOMETRY_WITH_CONTEXT</strong></h3><p>SDO_GEOM.VALIDATE_GEOMETRY_WITH_CONTEXT –确定几何是否有效，如果几何无效，则返回上下文信息</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.VALIDATE_GEOMETRY_WITH_CONTEXT(theGeometry <span class="keyword">IN</span> SDO_GEOMETRY, theDimInfo <span class="keyword">IN</span> SDO_DIM_ARRAY,conditional <span class="keyword">IN</span> VARCHAR2 <span class="keyword">DEFAULT</span> <span class="string">&#x27;TRUE&#x27;</span>) <span class="keyword">RETURN</span> VARCHAR2;</span><br><span class="line">SDO_GEOM.VALIDATE_GEOMETRY_WITH_CONTEXT(theGeometry <span class="keyword">IN</span> SDO_GEOMETRY,tolerance <span class="keyword">IN</span> NUMBER,conditional <span class="keyword">IN</span> VARCHAR2 <span class="keyword">DEFAULT</span> <span class="string">&#x27;TRUE&#x27;</span>) <span class="keyword">RETURN</span> VARCHAR2;</span><br></pre></td></tr></table></figure>
+
+<h3 id="VALIDATE-LAYER-WITH-CONTEXT"><a href="#VALIDATE-LAYER-WITH-CONTEXT" class="headerlink" title="VALIDATE_LAYER_WITH_CONTEXT"></a><strong>VALIDATE_LAYER_WITH_CONTEXT</strong></h3><p>SDO_GEOM.VALIDATE_LAYER_WITH_CONTEXT –确定存储在列中的所有几何是否有效，并返回有关任何无效几何的上下文信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.VALIDATE_LAYER_WITH_CONTEXT(geom_table IN VARCHAR2,geom_column IN VARCHAR2,result_table IN VA</span><br></pre></td></tr></table></figure>
+
+<h2 id="单对象操作："><a href="#单对象操作：" class="headerlink" title="单对象操作："></a><strong>单对象操作：</strong></h2><h3 id="SDO-ARC-DENSIFY"><a href="#SDO-ARC-DENSIFY" class="headerlink" title="SDO_ARC_DENSIFY"></a><strong>SDO_ARC_DENSIFY</strong></h3><p>SDO_GEOM.SDO_ARC_DENSIFY –简化，将圆弧简化成由直线组成的近似多段线；将圆近似成N多边形</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_ARC_DENSIFY(geom IN SDO_GEOMETRY,dim IN SDO_DIM_ARRAY, params IN VARCHAR2) RETURN SDO_GEOMETRY;</span><br><span class="line">SDO_GEOM.SDO_ARC_DENSIFY(geom IN SDO_GEOMETRY,tol IN NUMBER, params IN VARCHAR2) RETURN SDO_GEOMETRY;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-AREA"><a href="#SDO-AREA" class="headerlink" title="SDO_AREA"></a><strong>SDO_AREA</strong></h3><p>SDO_GEOM.SDO_AREA –计算多边形的面积</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_AREA(geom IN SDO_GEOMETRY,dim IN SDO_DIM_ARRAY [, unit IN VARCHAR2]) RETURN NUMBER;</span><br><span class="line">SDO_GEOM.SDO_AREA(geom IN SDO_GEOMETRY,tol IN NUMBER [, unit IN VARCHAR2]) RETURN NUMBER;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-BUFFER"><a href="#SDO-BUFFER" class="headerlink" title="SDO_BUFFER"></a><strong>SDO_BUFFER</strong></h3><p>SDO_GEOM.SDO_BUFFER –在几何体外部或内部生成缓冲区</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_BUFFER(geom IN SDO_GEOMETRY,dim IN SDO_DIM_ARRAY,dist IN NUMBER[, params IN VARCHAR2]) RETURN SDO_GEOMETRY;</span><br><span class="line">SDO_GEOM.SDO_BUFFER(geom IN SDO_GEOMETRY,dist IN NUMBER,tol IN NUMBER[, params IN VARCHAR2]) RETURN SDO_GEOMETRY;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-CENTROID"><a href="#SDO-CENTROID" class="headerlink" title="SDO_CENTROID"></a><strong>SDO_CENTROID</strong></h3><p>SDO_GEOM.SDO_CENTROID –计算多边形的质心</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_CENTROID(geom1 IN SDO_GEOMETRY,dim1 IN SDO_DIM_ARRAY) RETURN SDO_GEOMETRY;</span><br><span class="line">SDO_GEOM.SDO_CENTROID(geom1 IN SDO_GEOMETRY,tol IN NUMBER) RETURN SDO_GEOMETRY;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-CONVEXHULL"><a href="#SDO-CONVEXHULL" class="headerlink" title="SDO_CONVEXHULL"></a><strong>SDO_CONVEXHULL</strong></h3><p>SDO_GEOM.SDO_CONVEXHULL –返回几何对象的凸包的多边形类型对象</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_CONVEXHULL(geom1 IN SDO_GEOMETRY,dim1 IN SDO_DIM_ARRAY) RETURN SDO_GEOMETRY;</span><br><span class="line">SDO_GEOM.SDO_CONVEXHULL(geom1 IN SDO_GEOMETRY, tol IN NUMBER) RETURN SDO_GEOMETRY;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-LENGTH"><a href="#SDO-LENGTH" class="headerlink" title="SDO_LENGTH"></a><strong>SDO_LENGTH</strong></h3><p>SDO_GEOM.SDO_LENGTH –计算几何的长度或周长</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_LENGTH(geom IN SDO_GEOMETRY,dim IN SDO_DIM_ARRAY[, unit IN VARCHAR2][, count_shared_edges IN NUMBER]) RETURN NUMBER;</span><br><span class="line">SDO_GEOM.SDO_LENGTH(geom IN SDO_GEOMETRY,tol IN NUMBER[, unit IN VARCHAR2] [, count_shared_edges IN NUMBER]) RETURN NUMBER;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-MAX-MBR-ORDINATE"><a href="#SDO-MAX-MBR-ORDINATE" class="headerlink" title="SDO_MAX_MBR_ORDINATE"></a><strong>SDO_MAX_MBR_ORDINATE</strong></h3><p>SDO_GEOM.SDO_MAX_MBR_ORDINATE –返回几何对象最小边界矩形的指定纵坐标的最大值</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_MAX_MBR_ORDINATE(geom IN SDO_GEOMETRY,ordinate_pos IN NUMBER) RETURN NUMBER;</span><br><span class="line">SDO_GEOM.SDO_MAX_MBR_ORDINATE(geom IN SDO_GEOMETRY,dim IN SDO_DIM_ARRAY,ordinate_pos IN NUMBER) RETURN NUMBER;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-MIN-MBR-ORDINATE"><a href="#SDO-MIN-MBR-ORDINATE" class="headerlink" title="SDO_MIN_MBR_ORDINATE"></a><strong>SDO_MIN_MBR_ORDINATE</strong></h3><p>SDO_GEOM.SDO_MIN_MBR_ORDINATE –返回几何对象最小边界矩形的指定纵坐标的最小值</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_MIN_MBR_ORDINATE(geom IN SDO_GEOMETRY,ordinate_pos IN NUMBER ) RETURN NUMBER;</span><br><span class="line">SDO_GEOM.SDO_MIN_MBR_ORDINATE(geom IN SDO_GEOMETRY,dim IN SDO_DIM_ARRAY,ordinate_pos IN NUMBER) RETURN NUMBER;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-MBR"><a href="#SDO-MBR" class="headerlink" title="SDO_MBR"></a><strong>SDO_MBR</strong></h3><p>SDO_GEOM.SDO_MBR –返回几何对象最小边界矩形</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_MBR(geom IN SDO_GEOMETRY[, dim IN SDO_DIM_ARRAY]) RETURN SDO_GEOMETRY;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-POINTONSURFACE"><a href="#SDO-POINTONSURFACE" class="headerlink" title="SDO_POINTONSURFACE"></a><strong>SDO_POINTONSURFACE</strong></h3><p>SDO_GEOM.SDO_POINTONSURFACE –返回一个保证在多边形表面上的点</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_POINTONSURFACE(geom1 IN SDO_GEOMETRY,dim1 IN SDO_DIM_ARRAY) RETURN SDO_GEOMETRY;</span><br><span class="line">SDO_GEOM.SDO_POINTONSURFACE(geom1 IN SDO_GEOMETRY,tol IN NUMBER) RETURN SDO_GEOMETRY;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-VOLUME"><a href="#SDO-VOLUME" class="headerlink" title="SDO_VOLUME"></a><strong>SDO_VOLUME</strong></h3><p>SDO_GEOM.SDO_VOLUME –计算三维立体几何体的体积</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_VOLUME(geom IN SDO_GEOMETRY,tol IN NUMBER[, unit IN VARCHAR2]) RETURN NUMBER;</span><br></pre></td></tr></table></figure>
+
+<h2 id="双目标操作："><a href="#双目标操作：" class="headerlink" title="双目标操作："></a><strong>双目标操作：</strong></h2><h3 id="SDO-CLOSEST-POINTS"><a href="#SDO-CLOSEST-POINTS" class="headerlink" title="SDO_CLOSEST_POINTS"></a><strong>SDO_CLOSEST_POINTS</strong></h3><p>SDO_GEOM.SDO_CLOSEST_POINTS –计算两个几何之间的最小距离，并返回距离最小时在几何上的两点</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_CLOSEST_POINTS(geom1 IN SDO_GEOMETRY,geom2 IN SDO_GEOMETRY,tolerance IN NUMBER,unit IN VARCHAR2,dist</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-DISTANCE"><a href="#SDO-DISTANCE" class="headerlink" title="SDO_DISTANCE"></a><strong>SDO_DISTANCE</strong></h3><p>SDO_GEOM.SDO_DISTANCE –计算两个几何对象之间的距离</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_DISTANCE(geom1 IN SDO_GEOMETRY,dim1 IN SDO_DIM_ARRAY,geom2 IN SDO_GEOMETRY,dim2 IN SDO_DIM_ARRAY[, unit IN VARCHAR2]) RETURN NUMBER;</span><br><span class="line">SDO_GEOM.SDO_DISTANCE(geom1 IN SDO_GEOMETRY,geom2 IN SDO_GEOMETRY,tol IN NUMBER [, unit IN VARCHAR2]) RETURN NUMBER;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-DIFFERENCE"><a href="#SDO-DIFFERENCE" class="headerlink" title="SDO_DIFFERENCE"></a><strong>SDO_DIFFERENCE</strong></h3><p>SDO_GEOM.SDO_DIFFERENCE –返回几何对象（两个几何对象的拓扑差异，MINUS操作）</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_DIFFERENCE(geom1 IN SDO_GEOMETRY,dim1 IN SDO_DIM_ARRAY,geom2 IN SDO_GEOMETRY,dim2 IN SDO_DIM_ARRAY) RETURN SDO_GEOMETRY;</span><br><span class="line">SDO_GEOM.SDO_DIFFERENCE(geom1 IN SDO_GEOMETRY,geom2 IN SDO_GEOMETRY, tol IN NUMBER) RETURN SDO_GEOMETRY;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-INTERSECTION"><a href="#SDO-INTERSECTION" class="headerlink" title="SDO_INTERSECTION"></a><strong>SDO_INTERSECTION</strong></h3><p>SDO_GEOM.SDO_INTERSECTION –返回几何对象（两个几何对象的拓扑交点，AND操作）</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_INTERSECTION(geom1 IN SDO_GEOMETRY,dim1 IN SDO_DIM_ARRAY,geom2 IN SDO_GEOMETRY,dim2 IN SDO_DIM_ARRAY) RETURN SDO_GEOMETRY;</span><br><span class="line">SDO_GEOM.SDO_INTERSECTION(geom1 IN SDO_GEOMETRY,geom2 IN SDO_GEOMETRY, tol IN NUMBER) RETURN SDO_GEOMETRY;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-UNION"><a href="#SDO-UNION" class="headerlink" title="SDO_UNION"></a><strong>SDO_UNION</strong></h3><p>SDO_GEOM.SDO_UNION –返回几何对象（两个几何对象的拓扑结合，OR操作）</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_UNION(geom1 IN SDO_GEOMETRY,dim1 IN SDO_DIM_ARRAY, geom2 IN SDO_GEOMETRY,dim2 IN SDO_DIM_ARRAY) RETURN SDO_GEOMETRY;</span><br><span class="line">SDO_GEOM.SDO_UNION(geom1 IN SDO_GEOMETRY,geom2 IN SDO_GEOMETRY, tol IN NUMBER ) RETURN SDO_GEOMETRY;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SDO-XOR"><a href="#SDO-XOR" class="headerlink" title="SDO_XOR"></a><strong>SDO_XOR</strong></h3><p>SDO_GEOM.SDO_XOR –返回几何对象（两个几何对象的拓扑对称差异，XOR操作）</p>
+<p>eg:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">SDO_GEOM.SDO_XOR(geom1 IN SDO_XOR,dim1 IN SDO_DIM_ARRAY,geom2 IN SDO_GEOMETRY,dim2 IN SDO_DIM_ARRAY) RETURN SDO_GEOMETRY;</span><br><span class="line">SDO_GEOM.SDO_XOR(geom1 IN SDO_GEOMETRY,geom2 IN SDO_GEOMETRY, tol IN NUMBER ) RETURN SDO_GEOMETRY;</span><br></pre></td></tr></table></figure>
+
+<h1 id="实例："><a href="#实例：" class="headerlink" title="实例："></a>实例：</h1><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--wkt转geometry</span></span><br><span class="line"><span class="keyword">select</span> sdo_geometry(TO_CHAR(SDO_GEOMETRY(<span class="number">2003</span>, <span class="keyword">NULL</span>, <span class="keyword">NULL</span>, SDO_ELEM_INFO_ARRAY(<span class="number">1</span>, <span class="number">1003</span>, <span class="number">1</span>), SDO_ORDINATE_ARRAY(<span class="number">5</span>, <span class="number">5</span>, <span class="number">5</span>, <span class="number">7</span>, <span class="number">1</span>, <span class="number">7</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">5</span>, <span class="number">1</span>, <span class="number">5</span>, <span class="number">3</span>, <span class="number">6</span>, <span class="number">3</span>, <span class="number">6</span>, <span class="number">5</span>, <span class="number">5</span>, <span class="number">5</span>)).get_wkt())) <span class="keyword">from</span> dual</span><br><span class="line"><span class="comment">--wkt转geometry</span></span><br><span class="line"><span class="keyword">select</span> SDO_UTIL.from_wktgeometry(TO_CHAR(SDO_GEOMETRY(<span class="number">2003</span>, <span class="keyword">NULL</span>, <span class="keyword">NULL</span>, SDO_ELEM_INFO_ARRAY(<span class="number">1</span>, <span class="number">1003</span>, <span class="number">1</span>), SDO_ORDINATE_ARRAY(<span class="number">5</span>, <span class="number">5</span>, <span class="number">5</span>, <span class="number">7</span>, <span class="number">1</span>, <span class="number">7</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">5</span>, <span class="number">1</span>, <span class="number">5</span>, <span class="number">3</span>, <span class="number">6</span>, <span class="number">3</span>, <span class="number">6</span>, <span class="number">5</span>, <span class="number">5</span>, <span class="number">5</span>)).get_wkt())) <span class="keyword">from</span> dual</span><br><span class="line"><span class="comment">--geometry转wkt</span></span><br><span class="line"><span class="keyword">select</span> TO_CHAR(SDO_GEOMETRY(<span class="number">2003</span>, <span class="keyword">NULL</span>, <span class="keyword">NULL</span>, SDO_ELEM_INFO_ARRAY(<span class="number">1</span>, <span class="number">1003</span>, <span class="number">1</span>), SDO_ORDINATE_ARRAY(<span class="number">5</span>, <span class="number">5</span>, <span class="number">5</span>, <span class="number">7</span>, <span class="number">1</span>, <span class="number">7</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">5</span>, <span class="number">1</span>, <span class="number">5</span>, <span class="number">3</span>, <span class="number">6</span>, <span class="number">3</span>, <span class="number">6</span>, <span class="number">5</span>, <span class="number">5</span>, <span class="number">5</span>)).get_wkt()) <span class="keyword">from</span> dual</span><br><span class="line"><span class="comment">--geometry转wkt</span></span><br><span class="line"><span class="keyword">select</span> SDO_UTIL.to_wktgeometry_varchar(SDO_GEOMETRY(<span class="number">2003</span>, <span class="keyword">NULL</span>, <span class="keyword">NULL</span>, SDO_ELEM_INFO_ARRAY(<span class="number">1</span>, <span class="number">1003</span>, <span class="number">1</span>), SDO_ORDINATE_ARRAY(<span class="number">5</span>, <span class="number">5</span>, <span class="number">5</span>, <span class="number">7</span>, <span class="number">1</span>, <span class="number">7</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">5</span>, <span class="number">1</span>, <span class="number">5</span>, <span class="number">3</span>, <span class="number">6</span>, <span class="number">3</span>, <span class="number">6</span>, <span class="number">5</span>, <span class="number">5</span>, <span class="number">5</span>))) <span class="keyword">from</span> dual</span><br><span class="line"><span class="comment">--geometry转wkt（不受oracle字段只能少于4000个字符长度影响）</span></span><br><span class="line"><span class="keyword">select</span> SDO_UTIL.to_wktgeometry(SDO_GEOMETRY(<span class="number">2003</span>, <span class="keyword">NULL</span>, <span class="keyword">NULL</span>, SDO_ELEM_INFO_ARRAY(<span class="number">1</span>, <span class="number">1003</span>, <span class="number">1</span>), SDO_ORDINATE_ARRAY(<span class="number">5</span>, <span class="number">5</span>, <span class="number">5</span>, <span class="number">7</span>, <span class="number">1</span>, <span class="number">7</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">5</span>, <span class="number">1</span>, <span class="number">5</span>, <span class="number">3</span>, <span class="number">6</span>, <span class="number">3</span>, <span class="number">6</span>, <span class="number">5</span>, <span class="number">5</span>, <span class="number">5</span>))) <span class="keyword">from</span> dual</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--合并</span></span><br><span class="line"><span class="keyword">select</span> SDO_GEOM.SDO_UNION(SDO_GEOMETRY(<span class="string">&#x27;POLYGON((1 1,5 1,5 5,1 5,1 1))&#x27;</span>),SDO_GEOMETRY(<span class="string">&#x27;POLYGON((2 2,2 3,3 3,3 2,2 2))&#x27;</span>),<span class="number">0.001</span> ) <span class="keyword">from</span> dual;</span><br><span class="line"><span class="comment">--缓冲区</span></span><br><span class="line"><span class="keyword">select</span> SDO_UTIL.to_wktgeometry_varchar(SDO_GEOM.SDO_BUFFER(SDO_GEOMETRY(<span class="string">&#x27;POLYGON((1 1,5 1,5 5,1 5,1 1))&#x27;</span>),<span class="number">1000</span>,<span class="number">0.01</span>)) <span class="keyword">from</span> dual;</span><br><span class="line"><span class="comment">--点在面内</span></span><br><span class="line"><span class="keyword">select</span> SDO_GEOM.RELATE(SDO_GEOMETRY(<span class="string">&#x27;POLYGON((1 1,5 1,5 5,1 5,1 1))&#x27;</span>),<span class="string">&#x27;CONTAINS&#x27;</span>,SDO_GEOMETRY(<span class="string">&#x27;POINT(12 2)&#x27;</span>), <span class="number">0.01</span>) <span class="keyword">from</span> dual;</span><br><span class="line"><span class="comment">--对象相交 SDO_GEOMETRY(&#x27;POLYGON((0 0,0 1,1 1,1 0,0 0))&#x27;, srid)</span></span><br><span class="line"><span class="keyword">select</span> SDO_GEOM.RELATE(SDO_GEOMETRY(<span class="string">&#x27;POLYGON((0 0,0 1,1 1,1 0,0 0))&#x27;</span>),<span class="string">&#x27;ANYINTERACT&#x27;</span>,SDO_GEOMETRY(<span class="string">&#x27;POLYGON((0.5 0.5,0.5 1.5,1.5 1.5,1.5 0.5,0.5 0.5))&#x27;</span>), <span class="number">0.01</span>) <span class="keyword">from</span> dual;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="参考文章（其它）"><a href="#参考文章（其它）" class="headerlink" title="参考文章（其它）"></a>参考文章（其它）</h1><h2 id="https-www-cnblogs-com-lanzi-archive-2010-12-28-1918803-html"><a href="#https-www-cnblogs-com-lanzi-archive-2010-12-28-1918803-html" class="headerlink" title="https://www.cnblogs.com/lanzi/archive/2010/12/28/1918803.html"></a><a target="_blank" rel="noopener" href="https://www.cnblogs.com/lanzi/archive/2010/12/28/1918803.html">https://www.cnblogs.com/lanzi/archive/2010/12/28/1918803.html</a></h2><h3 id="官方：https-datacadamia-com-oracle-spatial-geometry"><a href="#官方：https-datacadamia-com-oracle-spatial-geometry" class="headerlink" title="官方：https://datacadamia.com/oracle_spatial/geometry"></a>官方：<a target="_blank" rel="noopener" href="https://datacadamia.com/oracle_spatial/geometry">https://datacadamia.com/oracle_spatial/geometry</a></h3>
+      
+    </div>
+    <div class="article-footer">
+      <!-- <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="http://example.com/2021/05/26/Oracle%20spatial%E7%9B%B8%E5%85%B3/" title="Oracle spatial相关" target="_blank" rel="external">http://example.com/2021/05/26/Oracle%20spatial%E7%9B%B8%E5%85%B3/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/immAntony" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/avatar.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/immAntony" target="_blank"><span class="text-dark">Antony</span><small class="ml-1x">Just Do It.</small></a></h3>
+        <div>拼搏中的少年</div>
+      </div>
+    </figure>
+  </div>
+</div>
+ -->
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2021/05/26/MySQL%E8%A1%A8%E8%BF%9E%E6%8E%A5%E5%8F%8A%E5%85%B6%E4%BC%98%E5%8C%96/" title="MySQL表连接及其优化"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2021/05/25/HashTable%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/" title="HashTable源码解析"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  
+  <div class="bar-right">
+    
+  </div>
+  </div>
+</nav>
+  
+
+
+</main>
+
+  <!-- <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+    <div class="copyright">
+    	
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer> -->
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+    <script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: '页面',
+            CATEGORIES: '分类',
+            TAGS: '标签',
+            UNTITLED: '(未命名)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+
+<script src="/js/insight.js"></script>
+
+
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: true,
+    notify: true,
+    appId: 'rhwhhT5v4UbIhkGEt6W6KreT-gzGzoHsz',
+    appKey: 'FRJK4DzD1YiKoOkpHKMfRgUC',
+    placeholder: '说点什么...',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: true
+  });
+  </script>
+
+     
+
+
+
+  <script src="//cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.3.5/dist/jquery.fancybox.min.js"></script>
+  <script>
+  //利用 FancyBox 实现点击图片放大
+  $(document).ready(function() {
+    $('article img').not('[hidden]').not('.panel-body img').each(function() {
+      var $image = $(this);
+      var imageCaption = $image.attr('alt');
+      var $imageWrapLink = $image.parent('a');
+      if ($imageWrapLink.length < 1) {
+        var src = this.getAttribute('src');
+        var idx = src.lastIndexOf('?');
+        if (idx != -1) {
+          src = src.substring(0, idx);
+        }
+        $imageWrapLink = $image.wrap('<a href="' + src + '"></a>').parent('a');
+      }
+      $imageWrapLink.attr('data-fancybox', 'images');
+      if (imageCaption) {
+        $imageWrapLink.attr('data-caption', imageCaption);
+      }
+    });
+    $().fancybox({
+      selector: '[data-fancybox="images"]',
+      hash: false,
+      loop: false,
+    });
+  });
+  </script>
+
+
+
+
+
+</body>
+</html>
